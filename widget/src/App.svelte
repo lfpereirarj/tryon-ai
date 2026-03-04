@@ -8,7 +8,7 @@
 }} />
 
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import tailwindStyles from './tailwind.css?inline';
   import ConsentModal from './lib/ConsentModal.svelte';
   import { createVtexAdapter } from './lib/platform/vtex-adapter.js';
@@ -44,8 +44,47 @@
 
   const resolvedApiUrl = $derived(apiUrl || (typeof window !== 'undefined' ? window.location.origin : ''));
 
+  /** Detecta mudança de produto na SPA (VTEX IO usa React Router / pushState) */
+  function getCurrentProductKey() {
+    // Tenta ler o SKU ou product ID atual para detectar troca de produto
+    const sku = document.querySelector('meta[property="product:sku"]')?.getAttribute('content')
+      || /** @type {any} */ (window).__RUNTIME__?.route?.params?.id
+      || window.location.pathname;
+    return sku;
+  }
+
+  let _productKey = '';
+  /** @type {ReturnType<typeof setInterval>|null} */
+  let _routeWatcher = null;
+
+  function resetWidgetState() {
+    step = 'closed';
+    selectedFile = null;
+    generatedImage = null;
+    error = null;
+    contextError = null;
+    storefrontContext = null;
+    showOriginal = false;
+    cartError = null;
+    cartLoading = false;
+  }
+
   onMount(() => {
     sessionId = getOrCreateSessionId();
+    _productKey = getCurrentProductKey();
+
+    // Polling leve (500ms) para detectar navegação SPA — pushState não dispara eventos nativos
+    _routeWatcher = setInterval(() => {
+      const currentKey = getCurrentProductKey();
+      if (currentKey && currentKey !== _productKey) {
+        _productKey = currentKey;
+        resetWidgetState();
+      }
+    }, 500);
+  });
+
+  onDestroy(() => {
+    if (_routeWatcher) clearInterval(_routeWatcher);
   });
 
   function getAdapter() {
@@ -97,15 +136,7 @@
   }
 
   function closeWidget() {
-    step = 'closed';
-    selectedFile = null;
-    generatedImage = null;
-    error = null;
-    contextError = null;
-    storefrontContext = null;
-    showOriginal = false;
-    cartError = null;
-    cartLoading = false;
+    resetWidgetState();
   }
 
   /** @param {Event} event */
