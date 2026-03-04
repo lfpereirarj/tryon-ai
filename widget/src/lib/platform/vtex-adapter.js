@@ -176,13 +176,17 @@ function readFromDom(storeApiKey) {
     ? String(win.__RUNTIME__.route.params.id)
     : null;
 
-  const skuId = document.querySelector('[data-sku-id]')?.getAttribute('data-sku-id')
+  const skuId = getContentByName('product:sku')
+    || getContentByName('og:product:sku')
+    || document.querySelector('[data-sku-id]')?.getAttribute('data-sku-id')
     || document.querySelector('[data-product-sku]')?.getAttribute('data-product-sku')
     || runtimeId
     || null;
 
-  const productId = document.querySelector('[data-product-id]')?.getAttribute('data-product-id')
+  const productId = getContentByName('product:retailer_item_id')
+    || document.querySelector('[data-product-id]')?.getAttribute('data-product-id')
     || runtimeId
+    || skuId
     || null;
 
   const productImageUrl = getContentByName('og:image');
