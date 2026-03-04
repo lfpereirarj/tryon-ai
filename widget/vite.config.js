@@ -4,11 +4,19 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [
-    tailwindcss(), // Injetamos o motor do Tailwind v4 aqui
+    tailwindcss(),
     svelte({
       compilerOptions: {
         customElement: true,
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: 'widget.js',
+        assetFileNames: 'widget.[ext]',
+      }
+    }
+  }
 })
