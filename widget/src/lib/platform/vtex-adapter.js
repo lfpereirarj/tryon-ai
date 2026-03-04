@@ -72,6 +72,7 @@ export function createVtexAdapter(storeApiKey) {
  * Tenta ler o contexto via VTEX IO.
  * A VTEX IO expõe dados de produto em window.__STORE_PRODUCT__  
  * ou via window.vtex.productDataLayer (variante mais comum).
+ * Fallback: __RUNTIME__.route.params.id + og:image (VTEX IO sem store state).
  *
  * @param {string} storeApiKey
  * @returns {import('../types.js').StorefrontContext|null}
@@ -79,30 +80,52 @@ export function createVtexAdapter(storeApiKey) {
 function readVtexIo(storeApiKey) {
   const win = /** @type {any} */ (window);
 
-  const product = win.__STORE_PRODUCT__
-    || win.vtex?.productDataLayer?.product
-    || win.__RUNTIME__?.route?.params?.skuId && win.__RUNTIME__?.queryData;
+  // Caminho 1: objeto de produto completo
+  const product = win.__STORE_PRODUCT__ || win.vtex?.productDataLayer?.product;
 
-  if (!product) return null;
+  if (product) {
+    const skuId = String(product.selectedSku?.itemId || product.skuId || product.sku || '');
+    const productId = String(product.productId || product.id || '');
+    const productImageUrl = product.selectedSku?.images?.[0]?.imageUrl
+      || product.images?.[0]?.imageUrl
+      || product.image
+      || '';
 
-  const skuId = String(product.selectedSku?.itemId || product.skuId || product.sku || '');
-  const productId = String(product.productId || product.id || '');
-  const productImageUrl = product.selectedSku?.images?.[0]?.imageUrl
-    || product.images?.[0]?.imageUrl
-    || product.image
-    || '';
+    if (skuId && productId && productImageUrl) {
+      return {
+        platform: 'vtex',
+        storeApiKey,
+        skuId,
+        productId,
+        productImageUrl,
+        currency: product.currency || 'BRL',
+        price: product.selectedSku?.sellers?.[0]?.commertialOffer?.Price,
+      };
+    }
+  }
 
-  if (!skuId || !productId || !productImageUrl) return null;
+  // Caminho 2: __RUNTIME__ com route params + og:image
+  // Comum em VTEX IO quando __STORE_PRODUCT__ ainda não foi populado
+  const params = win.__RUNTIME__?.route?.params;
+  if (params?.id) {
+    const productImageUrl = document.querySelector('meta[property="og:image"]')?.getAttribute('content') || '';
+    if (!productImageUrl) return null;
 
-  return {
-    platform: 'vtex',
-    storeApiKey,
-    skuId,
-    productId,
-    productImageUrl,
-    currency: product.currency || 'BRL',
-    price: product.selectedSku?.sellers?.[0]?.commertialOffer?.Price,
-  };
+    // skuId pode estar no param ou usamos o productId como fallback
+    const skuId = String(params.skuId || params.sku_id || params.id);
+    const productId = String(params.id);
+
+    return {
+      platform: 'vtex',
+      storeApiKey,
+      skuId,
+      productId,
+      productImageUrl,
+      currency: 'BRL',
+    };
+  }
+
+  return null;
 }
 
 /**
@@ -148,11 +171,18 @@ function readFromDom(storeApiKey) {
     || document.querySelector(`meta[name="${name}"]`)?.getAttribute('content')
     || null;
 
+  const win = /** @type {any} */ (window);
+  const runtimeId = win.__RUNTIME__?.route?.params?.id
+    ? String(win.__RUNTIME__.route.params.id)
+    : null;
+
   const skuId = document.querySelector('[data-sku-id]')?.getAttribute('data-sku-id')
     || document.querySelector('[data-product-sku]')?.getAttribute('data-product-sku')
+    || runtimeId
     || null;
 
   const productId = document.querySelector('[data-product-id]')?.getAttribute('data-product-id')
+    || runtimeId
     || null;
 
   const productImageUrl = getContentByName('og:image');
