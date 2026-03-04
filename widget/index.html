@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teste na Loja (VTEX Fake)</title>
+
+    <!-- Simula meta tags de PDP VTEX para o VtexAdapter (DOM fallback) -->
+    <meta property="og:image" content="https://digaspi.vtexassets.com/arquivos/ids/5378210-458-458/VESTIDO-REG-CANEL-BASICO-474-BEGE-P.jpg?v=638961308185600000" />
+
+    <style>
+      button { background-color: red !important; font-size: 50px !important; }
+      div { border: 10px solid green !important; }
+    </style>
+  </head>
+  <body>
+    <h1>Página do Produto (VTEX)</h1>
+    <p>O nosso widget não deve ser afetado pelo CSS vermelho e verde acima!</p>
+
+    <!-- Simula data-attributes de produto na PDP -->
+    <div data-sku-id="SKU-9988" data-product-id="PROD-1234">
+      <p>Nome do Produto</p>
+    </div>
+
+    <!--
+      Uso em produção:
+        store-api-key  → UUID da loja cadastrada no TryOn (obrigatório)
+        api-url        → URL base da API (opcional, padrão: window.location.origin)
+        platform       → plataforma (opcional, padrão: "vtex")
+    -->
+    <tryon-widget
+      store-api-key="31d44929-324e-428a-bc80-540871c832ce"
+      api-url="http://localhost:3000"
+      platform="vtex"
+    ></tryon-widget>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
