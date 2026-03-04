@@ -29,14 +29,14 @@ export function sendEvent({ apiUrl, storeApiKey, sessionId, skuId, eventName, me
       ...(metadata ? { metadata } : {}),
     });
 
-    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-      navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }));
-    } else {
-      fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-      }).catch(() => {});
-    }
+    // Usa fetch sem credenciais — evita preflight com credentials mode
+    // sendBeacon envia cookies por padrão e causa erro de CORS cross-origin
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      credentials: 'omit',
+      keepalive: true, // mantém a requisição viva mesmo em page-unload
+    }).catch(() => {});
   } catch {}
 }
