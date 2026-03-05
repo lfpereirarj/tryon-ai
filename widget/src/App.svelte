@@ -39,8 +39,7 @@
   let storefrontContext = $state(null);
   let showOriginal = $state(false);
   /** @type {string|null} */
-  let cartError = $state(null);
-  let cartLoading = $state(false);
+  let originalUserImageUrl = $state(null);
 
   const resolvedApiUrl = $derived(apiUrl || (typeof window !== 'undefined' ? window.location.origin : ''));
 
@@ -65,8 +64,10 @@
     contextError = null;
     storefrontContext = null;
     showOriginal = false;
-    cartError = null;
-    cartLoading = false;
+    if (originalUserImageUrl) {
+      URL.revokeObjectURL(originalUserImageUrl);
+      originalUserImageUrl = null;
+    }
   }
 
   onMount(() => {
@@ -175,6 +176,10 @@
   async function doGenerate() {
     if (!selectedFile || !storefrontContext) return;
 
+    // Cria URL de preview da foto original para comparação pós-resultado
+    if (originalUserImageUrl) URL.revokeObjectURL(originalUserImageUrl);
+    originalUserImageUrl = URL.createObjectURL(selectedFile);
+
     step = 'generating';
     error = null;
 
@@ -215,25 +220,9 @@
     generatedImage = null;
     error = null;
     showOriginal = false;
-    cartError = null;
-    cartLoading = false;
     step = 'upload';
   }
 
-  async function handleAddToCart() {
-    if (!storefrontContext) return;
-    cartError = null;
-    cartLoading = true;
-    const adapter = getAdapter();
-    const result = await adapter.addToCart(storefrontContext.skuId);
-    cartLoading = false;
-    if (result.success) {
-      sendEvent({ apiUrl: resolvedApiUrl, storeApiKey, sessionId, skuId: storefrontContext.skuId, eventName: 'tryon_add_to_cart' });
-      cartError = null;
-    } else {
-      cartError = result.error ?? 'Não foi possível adicionar ao carrinho.';
-    }
-  }
 </script>
 
 {@html `<style>${tailwindStyles}</style>`}
@@ -281,12 +270,12 @@
         <div class="flex flex-col gap-3">
           <div class="relative">
             <img
-              src={showOriginal ? (storefrontContext?.productImageUrl ?? generatedImage) : generatedImage}
-              alt={showOriginal ? 'Imagem original do produto' : 'Resultado do provador virtual'}
+              src={showOriginal ? (originalUserImageUrl ?? generatedImage) : generatedImage}
+              alt={showOriginal ? 'Sua foto original' : 'Resultado do provador virtual'}
               class="w-full rounded-xl border border-gray-100 shadow-sm object-cover transition-opacity duration-200"
             />
             <span class="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
-              {showOriginal ? 'Produto' : 'Você'}
+              {showOriginal ? 'Sua foto' : 'Resultado'}
             </span>
           </div>
 
@@ -295,7 +284,7 @@
               onclick={() => showOriginal = !showOriginal}
               class="py-2 bg-gray-100 text-gray-700 text-xs font-medium rounded-xl hover:bg-gray-200 transition-colors"
             >
-              {showOriginal ? '← Ver resultado' : 'Comparar produto'}
+              {showOriginal ? '← Ver resultado' : 'Ver minha foto'}
             </button>
             <button
               onclick={handleTryAgain}
@@ -305,22 +294,7 @@
             </button>
           </div>
 
-          {#if cartError}
-            <p class="text-xs text-red-600 text-center m-0">{cartError}</p>
-          {/if}
 
-          <button
-            onclick={handleAddToCart}
-            disabled={cartLoading}
-            class="w-full py-3 bg-gray-900 text-white font-semibold text-sm rounded-xl shadow-sm hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-          >
-            {#if cartLoading}
-              <span class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              Adicionando...
-            {:else}
-              🛒 Adicionar ao carrinho
-            {/if}
-          </button>
         </div>
 
       {:else}

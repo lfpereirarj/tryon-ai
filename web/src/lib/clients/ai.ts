@@ -21,8 +21,22 @@ export async function generateVirtualTryOn(
   const client = getClient();
 
   const prompt = productImageBuffer
-    ? 'A primeira imagem é a foto do usuário. A segunda imagem é o produto (roupa/acessório). Vista o produto da segunda imagem ao usuário de forma fotorrealista. Preserve EXATAMENTE a identidade, rosto, pose, fundo e iluminação originais. Adapte o tamanho e caimento da peça ao corpo com naturalidade profissional. Retorne APENAS a imagem resultante.'
-    : 'A imagem enviada é a foto do usuário. Vista o produto que aparece na cena ao usuário de forma fotorrealista. Preserve EXATAMENTE a identidade, rosto, pose, fundo e iluminação originais. Retorne APENAS a imagem resultante.';
+    ? `A primeira imagem é a foto do usuário. A segunda imagem é o produto (roupa/acessório).
+
+Instruções obrigatórias:
+1. CONSISTÊNCIA FÍSICA: Preserve integralmente o biotipo, estrutura corporal e peso do usuário. Se a pessoa for magra, o resultado deve mostrar uma pessoa magra; se for plus-size, deve mostrar plus-size. Não altere o corpo da pessoa em nenhuma hipótese.
+2. PRODUTO COMPLETO: Exiba sempre o produto na íntegra. Se a foto do usuário for cortada (ex: mostra só até a cintura), componha naturalmente a parte faltante para que o produto apareça completo, preservando o estilo fotográfico e o fundo originais.
+3. CAIMENTO NATURAL: Adapte o caimento da peça à forma corporal real do usuário. Uma roupa solta ou ampla no produto original não deve aparecer justa. Mantenha fielmente o estilo da peça (oversized, reto, fluido, justo, etc.).
+4. IDENTIDADE PRESERVADA: Preserve EXATAMENTE o rosto, expressão, pose, fundo e iluminação originais da foto do usuário.
+5. Retorne APENAS a imagem resultante, sem texto, marca d'água ou qualquer elemento extra.`
+    : `A imagem enviada é a foto do usuário. Vista o produto que aparece na cena ao usuário de forma fotorrealista.
+
+Instruções obrigatórias:
+1. CONSISTÊNCIA FÍSICA: Preserve integralmente o biotipo, estrutura corporal e peso do usuário. Não altere o corpo da pessoa em nenhuma hipótese.
+2. PRODUTO COMPLETO: Exiba o produto na íntegra, compondo naturalmente a cena se a foto estiver cortada.
+3. CAIMENTO NATURAL: Adapte o caimento ao corpo real do usuário, mantendo fiel o estilo original da peça.
+4. IDENTIDADE PRESERVADA: Preserve EXATAMENTE o rosto, expressão, pose, fundo e iluminação originais.
+5. Retorne APENAS a imagem resultante, sem texto, marca d'água ou qualquer elemento extra.`;
 
   const parts: Part[] = [
     { text: prompt },
