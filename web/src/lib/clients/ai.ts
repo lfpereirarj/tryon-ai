@@ -17,11 +17,13 @@ export async function generateVirtualTryOn(
   mimeType: string,
   productImageBuffer?: Buffer,
   productMimeType?: string,
+  productName?: string,
 ): Promise<string> {
   const client = getClient();
 
+  const productLabel = productName ? `"${productName}" ` : '';
   const prompt = productImageBuffer
-    ? `A primeira imagem é a foto do usuário. A segunda imagem é o produto (roupa/acessório).
+    ? `A primeira imagem é a foto do usuário. A segunda imagem é o produto ${productLabel}(roupa/acessório).
 
 Instruções obrigatórias:
 1. CONSISTÊNCIA FÍSICA: Preserve integralmente o biotipo, estrutura corporal e peso do usuário. Se a pessoa for magra, o resultado deve mostrar uma pessoa magra; se for plus-size, deve mostrar plus-size. Não altere o corpo da pessoa em nenhuma hipótese.

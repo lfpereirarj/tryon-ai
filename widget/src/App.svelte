@@ -191,6 +191,9 @@
     if (storefrontContext.productImageUrl) {
       formData.append('productImageUrl', storefrontContext.productImageUrl);
     }
+    if (storefrontContext.productName) {
+      formData.append('productName', storefrontContext.productName);
+    }
 
     try {
       const res = await fetch(`${resolvedApiUrl}/api/generate`, {

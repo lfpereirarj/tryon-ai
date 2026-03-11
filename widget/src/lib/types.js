@@ -5,6 +5,7 @@
  * @property {string} skuId - SKU do produto na PDP
  * @property {string} productId - ID do produto pai
  * @property {string} productImageUrl - URL pública da imagem do produto
+ * @property {string} [productName] - Nome do produto lido da página
  * @property {string} [currency] - Código ISO 4217. Ex: "BRL"
  * @property {number} [price] - Preço do produto no momento da exibição
  */

@@ -92,12 +92,14 @@ function readVtexIo(storeApiKey) {
       || '';
 
     if (skuId && productId && productImageUrl) {
+      const productName = String(product.productName || product.name || '').trim() || undefined;
       return {
         platform: 'vtex',
         storeApiKey,
         skuId,
         productId,
         productImageUrl,
+        productName,
         currency: product.currency || 'BRL',
         price: product.selectedSku?.sellers?.[0]?.commertialOffer?.Price,
       };
@@ -114,6 +116,9 @@ function readVtexIo(storeApiKey) {
     // skuId pode estar no param ou usamos o productId como fallback
     const skuId = String(params.skuId || params.sku_id || params.id);
     const productId = String(params.id);
+    const productName = document.querySelector('meta[property="og:title"]')?.getAttribute('content')?.trim()
+      || document.querySelector('h1')?.textContent?.trim()
+      || undefined;
 
     return {
       platform: 'vtex',
@@ -121,6 +126,7 @@ function readVtexIo(storeApiKey) {
       skuId,
       productId,
       productImageUrl,
+      productName,
       currency: 'BRL',
     };
   }
@@ -145,6 +151,7 @@ function readVtexLegacy(storeApiKey) {
   const productId = String(skuJson.productId || skuJson.CacheVersionUsedToCallService || '');
   const sku = skuJson.skus?.find((/** @type {any} */ s) => String(s.sku) === skuId) || skuJson.skus?.[0];
   const productImageUrl = sku?.image || sku?.imageUrl || '';
+  const productName = String(skuJson.name || skuJson.productName || sku?.name || '').trim() || undefined;
 
   if (!skuId || !productImageUrl) return null;
 
@@ -154,6 +161,7 @@ function readVtexLegacy(storeApiKey) {
     skuId,
     productId: productId || skuId,
     productImageUrl,
+    productName,
     currency: 'BRL',
   };
 }
@@ -190,6 +198,7 @@ function readFromDom(storeApiKey) {
     || null;
 
   const productImageUrl = getContentByName('og:image');
+  const productName = (getContentByName('og:title') || document.querySelector('h1')?.textContent?.trim()) || undefined;
 
   if (!skuId || !productImageUrl) return null;
 
@@ -199,5 +208,6 @@ function readFromDom(storeApiKey) {
     skuId,
     productId: productId || skuId,
     productImageUrl,
+    productName,
   };
 }

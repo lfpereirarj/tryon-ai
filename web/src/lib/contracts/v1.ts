@@ -25,6 +25,7 @@ export const TryOnGenerationRequestSchema = z.object({
   sessionId: z.string().min(1).max(255),
   skuId: z.string().min(1).max(255),
   productImageUrl: z.string().url('productImageUrl deve ser uma URL válida').optional(),
+  productName: z.string().max(255).optional(),
 });
 
 export type TryOnGenerationRequest = z.infer<typeof TryOnGenerationRequestSchema>;

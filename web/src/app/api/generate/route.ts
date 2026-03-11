@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
     sessionId: formData.get('sessionId'),
     skuId: formData.get('skuId'),
     productImageUrl: formData.get('productImageUrl') ?? undefined,
+    productName: formData.get('productName') ?? undefined,
   };
 
   let parsed: ReturnType<typeof TryOnGenerationRequestSchema.parse>;
@@ -173,6 +174,7 @@ export async function POST(request: NextRequest) {
       normalizeMime(imageFile.type),
       productBuffer,
       productMimeType ? normalizeMime(productMimeType) : undefined,
+      parsed.productName,
     );
     const generationTimeMs = Date.now() - startTime;
     console.info(`[IA] Concluído em ${generationTimeMs}ms`);
